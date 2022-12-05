@@ -763,9 +763,7 @@ Output: 1 Object File
 <details>
     <summary>View Output</summary>
 
-```
-...some binary stuff...
-```
+<img width="542" alt="image" src="https://user-images.githubusercontent.com/7360266/205631497-d40aa049-a962-4172-aae4-3c21966d85e6.png">
 
 </details>
 
