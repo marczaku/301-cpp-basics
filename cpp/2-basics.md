@@ -196,11 +196,14 @@ void sayHello() {
 }
 ```
 
-## Arrays
+## Static-Size Arrays
 
 ```cpp
 int numbers[100];
 ```
+
+Size of the Array must be constant!
+- unless you compile with `gcc`/`g++`
 
 ### Initialization
 

@@ -1,560 +1,327 @@
-# 3 Pointers
+# 4 Object Lifetime
 
-Reference types store the memory addresses of objects in order to write highly efficient programs. Instead of copying information from a to b, it can often directly be written in the correct location and passed on through its address.
+1. The object’s storage duration begins, and storage is allocated.
+2. The object’s constructor is called.
+3. The object’s lifetime begins.
+4. You can use the object in your program.
+5. The object’s lifetime ends.
+6. The object’s destructor is called.
+7. The object’s storage duration ends, and storage is deallocated.
 
-## Pointers
+## Automatic Storage Duration
 
-Pointers contain both pieces of information needed to interact with information:
-- address
-- type
-  - size
-  - way of interpreting it
-
-### Definition
-
-```cpp
-int* myPointer;
-```
-
-### Addressing Variables
-
-Address-Of Operator `&`
-
-```cpp
-#include <cstdio>
-
-int main() {
-	int number{};
-	printf("number: %d\n", number);
-	int* numberAddress = &number;
-	printf("&number: %p\n", numberAddress);
+```cs
+void addNumbers(int a, int b) {
+	int result = a+b;
+	return result;
 }
 ```
 
-### Address Space Layout Randomization
+What Objects:
+- objects defined within a scope
+- "local variables"
 
-If you run the program multiple, times, you'll notice some inconsistencies:
-```
-number: 0
-&number: 0x16f57334c
-number: 0
-&number: 0x16d37f34c
-```
+Storage Duration:
+- automatically allocated at the beginning of the enclosing scope
+- automatically deallocated at the end of the enclosing scope
 
-- the base memory address is randomized on start-up
-- to avoid exploitation e.g. through `return-oriented programs`
+In above example, `a`, `b` and `result` are automatically allocated when the function is invoked and automatically deallocated just before the function returns
 
-### Dereferencing Pointers
-
-Dereference Operator `*`
+## Static Storage Duration
 
 ```cpp
 #include <cstdio>
+
+int globalCounter{0};
+static int staticGlobalCounter{0};
+
+void runCounters() {
+	static int staticLocalCounter{0};
+	globalCounter++;
+	staticGlobalCounter++;
+	staticLocalCounter++;
+	printf("globalCounter: %d, staticLocalCounter: %d, staticGlobalCounter: %d\n", globalCounter, staticLocalCounter, staticGlobalCounter);
+}
 
 int main() {
-	int number{};
-	printf("number: %d\n", number);
-	int* numberAddress = &number;
-	printf("&number: %p\n", numberAddress);
-	*numberAddress = 24;
-	printf("number: %d\n", number);
-	printf("&number: %p\n", numberAddress);
+	runCounters();
+	runCounters();
+	runCounters();
 }
+
 ```
 
-### Accessing Pointer Members
+What Objects:
+- declared at namespace scope (including global namespace)
+- declared with `static` or `extern` keywords
 
-Member-Of-Pointer Operator `->`
+Storage Duration:
+- automatically allocated on program start
+- automatically deallocated on program exit
 
-To access a member of a class-pointer, you need to:
-- dereference the pointer
-- access a member of the pointed-to object
+In above example, `globalCounter`, `staticGlobalCounter` and `staticLocalCounter` all exist with only one instance in memory and allocated as long as the program runs.
+
+### Difference between the statics
+- al have a static storage duration
+- `static` global has an internally visible linker-symbol
+- global has an externally visible linker-symbol
+- `static` local has a visibility limited by its scope
+
+### Statics in Classes
 
 ```cpp
 #include <cstdio>
 
-struct DateTime {
-	int year{1990};
-	void addYear(){
-		year++;
+struct Battery {
+	int power;
+	static int totalPower;
+	Battery(int power) : power{power}
+	{
+		chargeTotalBattery(power);
+	}
+	static void chargeTotalBattery(int power) {
+		totalPower += power;
+		printf("Total Battery Power: %d\n", totalPower);
 	}
 };
 
-void modify(DateTime* timePtr){
-	(*timePtr).year = 2022;
-	(*timePtr).addYear();
-}
+int Battery::totalPower = 200;
 
 int main() {
-	DateTime time;
-	DateTime* timePtr = &time;
-	modify(timePtr);
-	printf("Address of time: %p\n", timePtr);
-	printf("Value of time: %d\n", (*timePtr).year);
+	Battery a{25};
+	Battery b{30};
+	Battery::chargeTotalBattery(50);
+	printf("In the end, we have a power of: %d\n",Battery::totalPower);
 }
 ```
 
-This can be done much more elegant using the arrow-operator:
-- Before: `(*variablePtr).member`
-- After: `variablePtr->member`
+- accessible through `TypeName::memberName`
+- fields only initializable from global scope
+  - unless they're `const`
+
+## Thread Storage Duration
 
 ```cpp
 #include <cstdio>
 
-struct DateTime {
-	int year{1990};
-	void addYear(){
-		year++;
+struct Battery {
+	int power;
+	static thread_local int totalPower;
+	static thread_local bool threadLocalInitialized;
+	Battery(int power) : power{power}
+	{
+		chargeTotalBattery(power);
+	}
+	static void chargeTotalBattery(int power) {
+		if(!threadLocalInitialized)
+		{
+			threadLocalInitialized = true;
+			totalPower = 200;
+		}
+		totalPower += power;
+		printf("Total Battery Power: %d\n", totalPower);
 	}
 };
 
-void modify(DateTime* timePtr){
-	timePtr->year = 2022;
-	timePtr->addYear();
-}
-
 int main() {
-	DateTime time;
-	DateTime* timePtr = &time;
-	modify(timePtr);
-	printf("Address of time: %p\n", timePtr);
-	printf("Value of time: %d\n", timePtr->year);
+	Battery a{25};
+	Battery b{30};
+	Battery::chargeTotalBattery(50);
+	printf("In the end, we have a power of: %d\n",Battery::totalPower);
 }
 ```
 
-## Pointers and Arrays
-Pointers are similar to Arrays:
-- A pointer encodes object type + location
-- An array encodes object type + location + number of objects
+What Objects:
+- declared with `thread_local` keyword
 
-### Array Decay
-Arrays can decay into pointers:
+Storage Duration:
+- automatically allocated on thread start
+- automatically deallocated on thread exit
 
-```cpp
-int keyToTheUniverse[]{3,6,9};
-int* keyPtr = keyToTheUniverse; // points to 3
-```
+In above example, `totalPower` and `threadLocalInitialized` are allocated separately on each thread and deallocated for each thread when it ends.
 
-This happens whenever you want to pass on an Array to another variable or function:
+## Dynamic Storage Duration
 
 ```cpp
 #include <cstdio>
 
-void printNumbers(int* numbers) {
-	// how to access number of elements here?
-	printf("Number: %d\n",numbers[0]);
-}
-
-int main() {
-	int keyToTheUniverse[]{3,6,9};
-	printNumbers(keyToTheUniverse);
-}
-```
-
-### Handling Decay
-
-This is usually solved by passing two arguments on:
-- A pointer to the first array element
-- The array length
-
-```cpp
-#include <cstdio>
-#include <array>
-
-void printNumbers(int* numbers, size_t count) {
-	// how to access number of elements here?
-	for(size_t i = 0; i < count; i++){
-		printf("Number: %d\n",numbers[i]);
+struct Battery {
+	int power;
+	static thread_local int totalPower;
+	Battery(int power) : power{power}
+	{
+		printf("Battery()\n");
+		chargeTotalBattery(power);
 	}
-}
+	~Battery() {
+		printf("~Battery()\n");
+	}
+	static void chargeTotalBattery(int power) {
+		totalPower += power;
+		printf("Total Battery Power: %d\n", totalPower);
+	}
+};
+thread_local int Battery::totalPower{200};
 
 int main() {
-	int keyToTheUniverse[]{3,6,9};
-	printNumbers(keyToTheUniverse, std::size(keyToTheUniverse));
-}
-```
-
-This is ubiquitous in C-Style APIs, e.g. Windows and Linux systems.
-
-## Pointer Arithmetic
-
-The following four lines all do the same:
-
-```cpp
-int main() {
-	int secondElement = keyToTheUniverse[1];
-	secondElement = *(keyToTheUniverse+1);
-	secondElement = *(1+keyToTheUniverse);
-	secondElement = 1[keyToTheUniverse];
-}
-```
-
-### Adding a scalar to Pointers
-
-When you add a scalar to a pointer, it offsets the pointer address by the pointer type's size
-
-```cpp
-int numbers[]{1,2,3};
-int* first = numbers; // address of first element
-int* second = first+1; // address of second element (first + 4 bytes)
-```
-
-Same for Short:
-
-```cpp
-short numbers[]{1,2,3};
-short* first = numbers; // address of first element
-short* second = first+1; // address of second element (first + 2 bytes)
-```
-
-Addition is commutative, which means that you can also do:
-
-```cpp
-short* second = 1+first;
-```
-
-### Using the Bracket-Operator
-
-`pointer[5]` is just short for: `*(pointer+5)`
-- first, add 5 to the pointer
-  - i.e. move 5 elements down in memory
-- then, dereference the pointer to access the value
-
-```cpp
-short numbers[]{1,2,3};
-short second = numbers[2];
-```
-
-This is the same as:
-
-```cpp
-short numbers[]{1,2,3};
-short second = *(numbers+2);
-```
-
-Which is commutative, so the same as:
-
-```cpp
-short numbers[]{1,2,3};
-short second = *(2+numbers);
-```
-
-Which can then be written as:
-
-```cpp
-short numbers[]{1,2,3};
-short second = 2[numbers];
-```
-
-## Pointer Arithmetic is Dangerous
-
-You can access arbitrary elements using the Bracket-Operator.
-- this allows any access to any memory address
-- unless you access an address without permission by the OS
-
-```cpp
-#include <cstdio>
-#include <array>
-
-int main() {
-	char lower[] = "abcde";
-	char upper[] = "ABCDE";
-
-	lower[2] = 'g';
-	upper[2] = 'G';
-
-	lower[8] = 'h';
-	upper[8] = 'H';
-
-	printf("lower: %s (%p)\nupper: %s (%p)\n", lower, lower, upper, upper);
-}
-```
-
-Output:
-
-```
-lower: Hbgde (0x16fdff3d8)
-upper: ABGDE (0x16fdff3d0)
-```
-
-## Void-Pointer
-If you want to pass on an address, but the type is relevant, you can use `void*`
-- it can not be dereferenced (type `void` does not exist)
-- pointer arithmetic is impossible (size is unknown)
-
-## Byte-Pointer
-If you want to pass on an address of arbitrary data, like reading, writing files, network i/o, encryption, compression, you can use `byte*`
-- dereferencing only gives you information of one `byte`
-- pointer arithmetic is possible (byte by byte)
-
-## Nullptr
-`nulltr` is the value for a pointer to 'nothing'. It is usually used to indicate that something does not exist (yet) or something went wrong.
-
-```cpp
-#include <cstdio>
-#include <array>
-
-char* names[]{"Alpha", "Beta", "Gamma", "Delta"};
-
-char* chooseName(){
-	for(char* name : names){
-		printf("Do you like the name '%s'? [y/n]\n", name);
-		char answer[2];
-		scanf("%1s", answer);
-		if(answer[0] == 'y'){
-			return name;
+	Battery* battery{nullptr};
+	for(int i = 0; i < 3; i++) {
+		{
+			printf("Do you want to create a battery? [y/n]\n");
+			fflush(stdin);
+			char answer = getchar();
+			if(answer == 'y') {
+				battery = new Battery{10};
+			}
+		}
+		{
+			printf("Do you want to delete a battery? [y/n]\n");
+			fflush(stdin);
+			char answer = getchar();
+			if(answer == 'y') {
+				delete battery;
+				battery = nullptr;
+			}
 		}
 	}
-	return nullptr;
-}
-
-int main() {
-	char* chosenName = chooseName();
-	if(chosenName == nullptr){
-		printf("You're never satisfied. Are you??\n");
-	}
-	else{
-		printf("%s is a wonderful name!", chosenName);
-	}
+	printf("In the end, we have a power of: %d\n",Battery::totalPower);
 }
 ```
 
-## Pointers and Conditions
+What Objects:
+- explicitly allocated using the `new` keyword
 
-Pointers have an implicit conversion to type `bool`:
-- `nullptr` converts to `false`
-- any other pointer converts to `true`
+Storage Duration:
+- allocated on `new`
+- deallocated on `delete` or `delete[]`
 
-Therefore:
+In above example, `battery` is allocated and deallocated explicitly only, if the user approves it. 
 
-```cpp
-if(chosenName == nullptr)
-// is the same as:
-if(!chosenName)
-```
+### new
 
-And
+When the `new` expression executes, the C++ runtime 
+- allocates memory to store a `Battery`-object
+- invokes the class's constructor
+- returns its pointer `Battery*`
 
-```cpp
-if(chosenName != nullptr)
-// is the same as:
-if(chosenName)
-```
+### delete
+When the `delete` expression executes, the C++ runtime
+- invokes the class's destructor
+- deallocates the object's memory
+- returns `void`
 
-## References
-Safer, more convenient version of pointers
-- can pass on references/pointers to values (no copy)
-- cannot be assigned `nullptr`
-- cannot be reseated (reassigned)
-- no member-of-pointer operator needed `->`
+Note: The Memory does not get cleaned up
+- Bug: Use after Free
+- You might use an object that's already been deleted
+- It doesn't become obvious anytime soon, because the values look good
+- But when a new object gets allocated in the same memory address
+- Things go down-under. Connection between `delete` and the Bug appearing is unclear
+
+### Dynamic Arrays
 
 ```cpp
 #include <cstdio>
 
-struct DateTime {
-	int year{1990};
-	void addYear(){
-		year++;
+struct Battery {
+	int power;
+	static thread_local int totalPower;
+	Battery(int power) : power{power}
+	{
+		printf("Battery()\n");
+		chargeTotalBattery(power);
+	}
+	~Battery() {
+		printf("~Battery()\n");
+	}
+	static void chargeTotalBattery(int power) {
+		totalPower += power;
+		printf("Total Battery Power: %d\n", totalPower);
 	}
 };
-
-void modify(DateTime& time){
-	time.year = 2022;
-	time.addYear();
-}
+thread_local int Battery::totalPower{200};
 
 int main() {
-	DateTime time;
-	modify(time);
-	printf("Value of time: %d\n", time.year);
+	printf("How many Batteries do you want? [0-9]\n");
+	fflush(stdin);
+	char answer = getchar();
+	int answerNum = answer - '0';
+	Battery** batteries {new Battery*[answerNum]};
+	for(int i = 0; i < answerNum; i++) {
+		batteries[i] = new Battery{10};
+	}
+	for(int i = answerNum-1; i > -1; i--) {
+		delete batteries[i];
+	}
+	delete[] batteries;
+
+	printf("In the end, we have a power of: %d\n",Battery::totalPower);
 }
 ```
 
-Cannot be reseated:
+## Memory Leaks
+- If you allocate memory
+- But forget to deallocate it
+- Resources are lost FOREVER
+- Or until your program exits (whichever happens sooner)
+
+## Tracing Object Life Cycle
 
 ```cpp
 #include <cstdio>
 
-struct DateTime {
-	int year{1990};
-	void addYear(){
-		year++;
-	}
+struct Tracer {
+  const char* const name;
+  Tracer(const char* name) : name{ name }➋ {
+    printf("%s()\n", name);
+  }
+  ~Tracer() {
+    printf("~%s()\n", name);
+  }
 };
+
+static Tracer t1{ "Static" };
+thread_local Tracer t2{ "Thread-local" };
 
 int main() {
-	DateTime time{2004};
-	DateTime time2{2012};
-	DateTime& timeRef = time;
-	timeRef = time2; // the value of time2 gets copied to time
-	time2.year = 12; // 12 gets only assigned to time2
-	printf("Value of time: %d\n", time.year);
-	printf("Value of time2: %d\n", time2.year);
-	printf("Value of timeRef: %d\n", timeRef.year);
+  printf("Step 1\n");
+  Tracer t3{ "Automatic" };
+  printf("Step 2\n");
+  const auto* t4 = new Tracer{ "Dynamic" };
+  printf("Step 3\n");
 }
 ```
 
-## Reference vs. Pointer
-Use Pointers only, when you need to reseat them or because you need `nullptr`. In all other cases, References should be preferred.
+## Exercise: String-Class!
 
-## This-Pointer
-Sometimes, you need to access the `current object` from a method. As in, the object on which the Method is currently being invoked. e.g. when attacking:
+Please do this exercise. We will continue working on this!
 
-```cpp
-#include <cstdio>
-struct Unit{
-	char* name;
-	Unit(char* name){
-		// Use case for `this`: name is the name both for the constructor arg as well as the field member
-		this->name = name;
-	}
+### private Members
+- `xxx length;`
+- `xxx buffer;`
+- `xxx maxSize;`
 
-	void attack(Unit* target){
-		// Use case for `this`: pass on a pointer to ourselves to the attacked Unit
-		target->attackedBy(this);
-	}
-
-	void attackedBy(Unit* attacker){
-		printf("%s got attacked by %s.\n", name, attacker->name);
-	}
-};
-
-int main(){
-	Unit hero{"Hero"};
-	Unit monster{"Monster"};
-	hero.attack(&monster);
-}
-```
-
-## Const
-- short for "constant"
-- i.e. "cannot be movied"
-- gives compiler errors if violated
-
-### Const Arguments
-
-```cpp
-#include <cstdio>
-void printButDoNotModify(const char* name){
-	printf("%s", name);
-	// name[0] = 'K'; // Won't compile!
-}
-
-int main() {
-	char* name = "Marc";
-	printButDoNotModify(name);
-}
-```
-
-### Const Methods
-
-The following code won't compile:
-
-```cpp
-class DateTime {
-	int year{1990};
-public:
-	DateTime(int year){
-		this->year = year;
-	}
-	void addYear() {
-		year++;
-	}
-	int getYear() {
-		return year;
-	}
-};
-
-void printButDoNotModify(const DateTime& dateTime){
-	printf("Year: %d", dateTime.getYear());
-}
-
-int main() {
-	DateTime time{1925};
-	printButDoNotModify(time);
-}
-```
-
-Error: `this` argument to member function `getYear` has type `const DateTime`, but function is not marked `const`
-
-Reason is, that only `const` methods can be invoked on `const` variables.
-
-#### Definition
-
-```cpp
-int getYear() const {
-	return year;
-}
-```
-
-#### Usage
-
-```cpp
-int getYear() const {
-	return ++year; // Won't compile - error: cannot assign to non-static data member within const member function 'getYear'
-}
-```
-
-### Const Members
-
-```cpp
-struct Unit {
-	const int maxLevel = 100;
-	DateTime birthDate;
-}
-```
-
-#### Initializer List
-
-```cpp
-#include <cstdio>
-class DateTime {
-	int year{1990};
-public:
-	DateTime(int year){
-		this->year = year;
-	}
-	void addYear() {
-		year++;
-	}
-	int getYear() const {
-		return year;
-	}
-};
-
-struct Unit {
-	const int maxLevel = 100;
-	const int id;
-	const DateTime birthDate;
-	Unit(int id, int year) : id{id}, birthDate{year}{
-
-	}
-};
-
-int main(){
-	Unit unit{1337, 1990};
-	printf("Unit #%d, born %d", unit.id, unit.birthDate.getYear());
-}
-```
-
-- member initializations execute before constructor's body
-  - ensures validity of all members before constructor code
-  - members initialize only once
-
-## Auto Type Deduction
-
-```cpp
-auto number{12};
-auto isAlive{true};
-auto name{"Marc"};
-```
-
-### Reference Types
-
-```cpp
-auto number{42};
-auto& numberRef = number;
-auto* numberPtr = &number;
-```
-
-## EXERCISE: LINKED LIST
+### public Members
+- `ctor(xxx maxSize)`
+  - add a log so you see that an empty string gets constructed
+  - create buffer
+  - initialize length & maxSize
+- `ctor(xxx defaultText, xxx maxSize)`
+  - add a log so you see that a non-empty string gets constructed
+  - create buffer
+  - initialize length & maxSize
+  - append defaultText
+- `~()`
+  - add a log so you see what string gets deconstructed
+  - delete buffer
+- `append(xxx text)`
+  - checks for maxSize! -> exception
+  - adds the given text to the string's buffer
+  - updates length
+- `appendLine(xxx text)`
+  - checks for maxSize! -> exception
+  - adds the given text + line break to the string's buffer
+  - updates length
+- `void print()`
+  - prints the string that's currently buffered
+- `xxx getString()`
+  - returns a c-style string for the currently buffered contents

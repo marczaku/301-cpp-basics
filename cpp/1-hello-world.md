@@ -823,10 +823,16 @@ gcc main.cpp -o main -std=c++14
 ```
 
 ## Integrated Development Environment (IDE)
-- Visual Studio
-- XCode
-- Eclipse
-- CLion
+- Rider (Windows)
+- Visual Studio (Windows)
+- XCode (MacOS)
+- Eclipse (Cross-Platform)
+- CLion (Cross-Platform)
+
+## Project-Management
+- Manually build all compiler and linker commands
+- Cross-Platform CMake: Make-Files
+- Windows MSBuild: `.sln`, `.cproj` `.vcxproj`
 
 ## Type System
 - Object-Oriented (State and Behaviour)
