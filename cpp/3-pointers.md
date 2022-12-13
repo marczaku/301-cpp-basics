@@ -12,6 +12,8 @@ Pointers contain both pieces of information needed to interact with information:
 
 ### Definition
 
+Pointer-Declarator `*`
+
 ```cpp
 int* myPointer;
 ```
@@ -19,6 +21,10 @@ int* myPointer;
 ### Addressing Variables
 
 Address-Of Operator `&`
+- gets the address of an object
+- returns a pointer-type
+  - e.g. for `int`, it returns `int*`
+  - e.g. for `char*`, it returns `char**`
 
 ```cpp
 #include <cstdio>
@@ -26,7 +32,9 @@ Address-Of Operator `&`
 int main() {
 	int number{};
 	printf("number: %d\n", number);
+	// get the address of variable `number`
 	int* numberAddress = &number;
+	// print the address to the console
 	printf("&number: %p\n", numberAddress);
 }
 ```
@@ -34,9 +42,13 @@ int main() {
 ### Address Space Layout Randomization
 
 If you run the program multiple, times, you'll notice some inconsistencies:
+
 ```
 number: 0
 &number: 0x16f57334c
+```
+
+```
 number: 0
 &number: 0x16d37f34c
 ```
@@ -47,6 +59,12 @@ number: 0
 ### Dereferencing Pointers
 
 Dereference Operator `*`
+- gets the object behind an address
+- returns the pointed-to type
+  - e.g. for `int*`, it returns `int`
+  - e.g. for `char**`, it returns `char*`
+- you can then assign the object to another variable
+- or you can write a new value into the object
 
 ```cpp
 #include <cstdio>
@@ -127,6 +145,30 @@ Pointers are similar to Arrays:
 - A pointer encodes object type + location
 - An array encodes object type + location + number of objects
 
+### Explain the Output:
+
+```cpp
+#include <cstdio>
+
+void foo(char name[10])
+{
+    printf("Size within foo: %zd\n", sizeof name);
+}
+
+int main() {
+    char name[10] = "Marc";
+    printf("Size within main: %zd\n", sizeof name);
+    foo(name);
+}
+```
+
+Output:
+```
+Size within main: 10
+Size within foo: 8
+
+```
+
 ### Array Decay
 Arrays can decay into pointers:
 
@@ -191,12 +233,12 @@ int main() {
 
 ### Adding a scalar to Pointers
 
-When you add a scalar to a pointer, it offsets the pointer address by the pointer type's size
+When you add a scalar to a pointer, it offsets the pointer address by `the pointed-to-type's size * scalar value`
 
 ```cpp
 int numbers[]{1,2,3};
 int* first = numbers; // address of first element
-int* second = first+1; // address of second element (first + 4 bytes)
+int* third = first+2; // address of third element (first + 2 * 4 bytes)
 ```
 
 Same for Short:
@@ -204,7 +246,7 @@ Same for Short:
 ```cpp
 short numbers[]{1,2,3};
 short* first = numbers; // address of first element
-short* second = first+1; // address of second element (first + 2 bytes)
+short* third = first+2; // address of third element (first + 2 * 2 bytes)
 ```
 
 Addition is commutative, which means that you can also do:
@@ -222,35 +264,38 @@ short* second = 1+first;
 
 ```cpp
 short numbers[]{1,2,3};
-short second = numbers[2];
+short third = numbers[2];
 ```
 
 This is the same as:
 
 ```cpp
 short numbers[]{1,2,3};
-short second = *(numbers+2);
+short third = *(numbers+2);
 ```
 
 Which is commutative, so the same as:
 
 ```cpp
 short numbers[]{1,2,3};
-short second = *(2+numbers);
+short third = *(2+numbers);
 ```
 
 Which can then be written as:
 
 ```cpp
 short numbers[]{1,2,3};
-short second = 2[numbers];
+short third = 2[numbers];
 ```
+
+Looks weird, but it's valid c++ code!
 
 ## Pointer Arithmetic is Dangerous
 
 You can access arbitrary elements using the Bracket-Operator.
 - this allows any access to any memory address
 - unless you access an address without permission by the OS
+  - then the OS will terminate your program
 
 ```cpp
 #include <cstdio>
@@ -284,7 +329,7 @@ If you want to pass on an address, but the type is relevant, you can use `void*`
 
 ## Byte-Pointer
 If you want to pass on an address of arbitrary data, like reading, writing files, network i/o, encryption, compression, you can use `byte*`
-- dereferencing only gives you information of one `byte`
+- dereferencing only gives you information of generic type `byte`
 - pointer arithmetic is possible (byte by byte)
 
 ## Nullptr

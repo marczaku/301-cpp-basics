@@ -662,4 +662,4 @@ int main(){
 ## EXERCISE: STRING WITH ALL LETTERS
 - Create a String with all letters A-Z using a loop
 ## EXERCISE: CALCULATOR 
-- Make a Calculator Application
+- Make an Object-Oriented Calculator Application
