@@ -195,7 +195,7 @@ int main() {
 
 ### Handling Decay
 
-This is usually solved by passing two arguments on:
+This is usually solved by passing on two arguments:
 - A pointer to the first array element
 - The array length
 
@@ -601,5 +601,3 @@ auto number{42};
 auto& numberRef = number;
 auto* numberPtr = &number;
 ```
-
-## EXERCISE: LINKED LIST

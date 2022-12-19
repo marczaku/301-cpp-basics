@@ -1,6 +1,109 @@
 # 2 Basics
 
-## Integers
+## Comments
+
+### C-Style Comments
+
+```cpp
+/*
+ * multi-line comment
+ */
+```
+
+Careful: Nesting Comments does not work!
+```cpp
+/*
+void foo() {
+	int a = 3;
+	int b = 2;
+	/* int c = 5; */
+	return 5;
+}
+*/
+```
+
+### Cpp-Style Comments
+```cpp
+// single-line comment
+int number = 12; // span the rest of the line
+```
+
+## Output
+
+### Write Line: Puts
+
+Prints the given string and a newline to the console.
+
+```cpp
+puts("Hello, World.");
+```
+
+### Write: Printf
+
+```cpp
+printf("Hello, World.");
+```
+
+### Write Format: Printf
+
+```cpp
+printf("Ten %d, Twenty %d, Thirty %d", 10, 20, 30);
+```
+
+## Variables
+
+### Declaration
+
+```cpp
+int health;
+int x, y, z;
+```
+
+#### Global
+
+```cpp
+int health;
+int main() {
+
+}
+```
+
+#### Local
+
+```cpp
+int main() {
+	int health;
+}
+```
+
+### Assignment Operator
+```cpp
+int a;
+a = 5;
+```
+
+- right-associative (executes right to left)
+
+### Initialization
+
+```cpp
+int health = 100;
+int minHealth = 0, maxHealth = 100;
+```
+
+### Scope
+- Within File
+- Below the line where it was declared
+- Within enclosing Curly Braces
+- Must be unique within Scope
+
+## Basic Data Types
+
+- Object-Oriented (State and Behaviour)
+- Definition = Type
+- Strongly-Typed
+
+### Integers
 
 | Type | Signed | Win32 | Unix32 | Win64 | Unix64 | Printf |
 |------|--------|-------|--------|-------|--------|--------|
@@ -16,7 +119,7 @@
 - The sizes of numeric types depend on the OS and the Compiler
 - Your application can behave inconsistent
 
-### Guaranteed sizes
+#### Guaranteed sizes
 
 ```cpp
 #include <cstdint>
@@ -29,7 +132,7 @@ uint8_t e;
 
 - provides guaranteed sizes
 
-### Literals
+#### Literals
 
 ```cpp
 int a = 0b11; // binary
@@ -51,14 +154,14 @@ unsigned long long a = 1234ull;
 - Numeric literals per default have the smallest fitting type
   - e.g. 111111 can be stored in `int`
 
-### Printf
+#### Printf
 
 ```cpp
 unsigned int a = 255;
 printf("%c, %o, %u, %x", a, a, a, a);
 ```
 
-## Floating-Point Types
+### Floating-Point Types
 
 ```cpp
 float f = .3f;
@@ -70,7 +173,7 @@ long double ld = .3l;
 - `double` often 8 bytes
 - `long double` often same size as `double`
 
-### Literals
+#### Literals
 
 ```cpp
 float d = 10.3f;
@@ -79,7 +182,7 @@ float f = 6.3e+12;
 float g = 6.3e-12;
 ```
 
-### Printf
+#### Printf
 
 ```cpp
 float f = .0003f;
@@ -96,7 +199,7 @@ long double ld = 0.0003l;
 printf("%lf, %Lf", d, ld);
 ```
 
-## Characters
+### Characters
 
 ```cpp
 char ascii = 'a';
@@ -105,7 +208,7 @@ char32_t utf32 = U'a';
 wchar_t unicode = L'a';
 ```
 
-### Escaping
+#### Escaping
 
 - Newline: '\n'
 - Horizontal Tab: '\t'
@@ -118,14 +221,14 @@ wchar_t unicode = L'a';
 - Double Quote: '\"'
 - Null Character: '\0'
 
-### Unicode
+#### Unicode
 
 ```cpp
 wchar_t a = '\u0041'; // 4-digit unicode
 wchar_t beer = U'\U0001F37A'; // 8-digit unicode
 ```
 
-### Printf
+#### Printf
 
 ```cpp
 #include <cstdio>
@@ -137,14 +240,14 @@ int main() {
 }
 ```
 
-## Boolean
+### Boolean
 
 ```cpp
 bool b = false; // 0
 bool c = true; // 1
 ```
 
-### Printf
+#### Printf
 
 ```cpp
 #include <cstdio>
@@ -156,25 +259,11 @@ int main() {
 }
 ```
 
-## Comparison Operators
-- Two arguments
-- Return Type `bool`
-- `==`, `!=`, `<`, `<=`, `>`, `>=`
-
-## Types
-- Unary
-- Binary
-- Ternary
-
-## Logical Operators
-
-- `!`, `&&`, `||`
-
-## std::byte
+### std::byte
 
 Later
 
-## size_t
+### size_t
 
 ```cpp
 size_t floatSize = sizeof(float);
@@ -182,13 +271,13 @@ size_t floatSize = sizeof(float);
 
 - can store the maximum size of a theoretically possible object of any type (including array)
 
-### Printf
+#### Printf
 
 ```cpp
 printf("float: %zu", sizeof(float));
 ```
 
-## void
+### void
 
 ```cpp
 void sayHello() {
@@ -196,96 +285,9 @@ void sayHello() {
 }
 ```
 
-## Static-Size Arrays
+### Eumeration Types
 
-```cpp
-int numbers[100];
-```
-
-Size of the Array must be constant!
-- unless you compile with `gcc`/`g++`
-
-### Initialization
-
-```cpp
-int array[] = {1, 2, 3, 4};
-```
-
-### Index Operator
-
-```cpp
-printf("Second element: %d", array[1]);
-```
-
-## for
-
-You should not use `int`, since it does not guarantee to be able to store an Array of `MAX_SIZE`:
-
-```cpp
-for(int i = 0; i < 10; ++i) {
-	printf("%d\n", i);
-}
-```
-
-Instead use `size_t`, especially, if you want to support any edge case:
-
-```cpp
-for(size_t i = 0; i < 5; i++) {
-	printf("%d\n", array[i]);
-}
-```
-
-## Range-Based For
-
-```cpp
-for(int number : array) {
-	printf("%d\n", number);
-}
-```
-
-## Number of Elements in Array
-
-The hard, manual way:
-
-```cpp
-size_t count = sizeof(array) / sizeof(int);
-```
-
-Better:
-
-```cpp
-#include <array>
-size_t count = std::size(array);
-```
-
-## C-Style Strings
-
-```cpp
-char text[] = "Hello world.";
-char16_t chinese[] = u"\u4e66\u4e2d";
-char32_t utf32[] = U"abc";
-wchar_t unicode[] = L"abc";
-```
-- Null-Terminated String
-- Means, it ends with first occurence of `'\0'` or `0`
-
-### Multiline
-
-```cpp
-char text[] = "hello "
-	"world "
-	"this is " "c++.";
-```
-
-### Printf
-
-```cpp
-printf("Here you go: %s", text);
-```
-
-## Eumeration Types
-
-### Scoped Enum (Modern, C++ Style)
+#### Scoped Enum (Modern, C++ Style)
 
 ```cpp
 enum class ChessPiece {
@@ -300,7 +302,7 @@ enum class ChessPiece {
 ChessPiece rook = ChessPiece::Rook
 ```
 
-### Unscoped Enum (Old, C-Style)
+#### Unscoped Enum (Old, C-Style)
 
 ```cpp
 enum ChessPiece {
@@ -318,7 +320,93 @@ ChessPiece rook = Rook;
 - Less safe to use, because values can be accessed without preceding type name `ChessPiece::`
 - Use for backwards-compatibility with C applications
 
-## Switch
+## Operators
+
+### Operator Types
+- Unary `-a`, `+a`, `a++`
+- Binary `a+b`, `a*b`, `a<b`
+- Ternary `a ? b : c`
+
+### Arithmetic Operators
+- `+`, `-`, `/`, `*`, `%`, `++`, `--`
+
+### Comparison Operators
+- Two arguments
+- Return Type `bool`
+- `==`, `!=`, `<`, `<=`, `>`, `>=`
+
+### Logical Operators
+
+- `!`, `&&`, `||`
+
+### Bitwise Operators
+
+- `~`, `&`, `|`, `^`, `>>`, `<<`
+
+### Compound Assignment Operators
+
+- `+=`, `-=`, `*=`, `/=`, `%=`, `|=`, `&=`, `^=`, `<<=`, `>>=`
+
+## Input
+
+### Read Character: getchar
+
+```cpp
+printf("Do you want to continue? y/n");
+char c = getchar();
+{ // clear unparsed characters from the buffer
+	char _c;
+	while ((_c = getchar()) != '\n' && _c != EOF);
+}
+switch(c){
+	/*...*/
+}
+```
+
+### Read String: fgets
+
+Later
+
+### Read Format: scanf
+
+```cpp
+// required to allow using scanf on Windows
+#define _CRT_SECURE_NO_WARNINGS
+#include <cstdio>
+
+int main() {
+    for(int i = 0; i < 5; i++)
+    {
+        AskAgain:
+        // ask for input
+        printf("Give me two numbers. e.g. 3, 7\n");
+        // declare variable to store the information in
+        int num1, num2;
+        // read input from the console. Returns the number of successfully parsed arguments 
+        int result = scanf("%d, %d", &num1, &num2);
+        
+        { // clear unparsed characters from the buffer
+            char c;
+            while ((c = getchar()) != '\n' && c != EOF);
+        }
+
+        // if not both numbers were provided, we go back to asking again
+        if(result != 2) goto AskAgain;
+        // else, we can print the average of both provided numbers:
+        printf("The average is %d.\n", (num1+num2)/2);
+    }
+}
+```
+
+## Control Structures
+
+### Jumps
+- `goto`, `break`, `continue`
+
+### Branches
+- `if`, `switch`
+
+#### Switch
 
 ```cpp
 int number = 1;
@@ -340,326 +428,31 @@ Performance: Compiler can generate:
 - binary decision tree: optimized if..else with binary search
 - worst case: same as if..else
 
-## Plain-Old-Data Classes
+### Loops
+`for`, `while`, `do..while`
 
-- C-Compatible
-- Highly Efficient to Copy or Move
-- Efficiently represented in Memory
+## Expressions
 
-### Definition
+Every expression is a valid C++ statement. Including:
 
 ```cpp
-struct Book {
-	char name[256];
-	int year;
-	int pages;
-	bool hardcover;
+a = b = 10 + 2;
+a = 10 + 2;
+10 + 2;
+2;
+```
+
+### Expression Short-Cutting
+
+```cpp
+int a = 0, b = 0;
+if(++a || ++b){
+	printf("True!");
 }
+printf("a: %d, b: %d", a, b);
 ```
 
-### Usage
-
-```cpp
-int main() {
-	Book book;
-	book.name = "Harry Potter Part 1";
-	book.year = 2000;
-	printf("Book %s (%d)", book.name, book.year);
-}
-```
-
-### Order
-- Order of members is maintained
-- CPU Register Length causes member alignment
-- Rule: Order members from small to large
-
-## Union
-
-- Puts all members into the same place.
-- Useful in Low-Level Optimization
-
-### Definition
-
-```cpp
-union Variant {
-	bool isTrue;
-	int number;
-	double decimal;
-}
-```
-
-### Usage
-
-```cpp
-Variant v;
-v.number = 42;
-printf("Nice: %d", v.number);
-v.decimal = 2.71828;
-printf("Nope: %d", v.number);
-```
-
-## Fully-Featured Classes
-
-- Classes which contain Methods
-- Allow for Encapsulation
-
-### Methods
-
-- Member Functions
-- Have access to all class Members
-
-```cpp
-struct Time {
-	void addYear() {
-		year++;
-	}
-	int year;
-};
-```
-
-```cpp
-int main() {
-  	Time time;
-	time.year = 2022;
-	printf("Time: %d\n",time.year);
-	time.addYear();
-	printf("Time: %d\n",time.year);
-}
-```
-
-### Access Control
-
-- structs are `public` per default:
-
-```cpp
-struct Time {
-	void addYear() {
-		year++;
-	}
-	bool setYear(int newYear) {
-		if(newYear < 1990) return false;
-		year = newYear;
-		return true;
-	}
-	int getYear() {
-		return year;
-	}
-private:
-	int year;
-}
-```
-
-- classes are `private` per default:
-
-```cpp
-class Time {
-	int year;
-public:
-	void addYear() {
-		year++;
-	}
-	bool setYear(int newYear) {
-		if(newYear < 1990) return false;
-		year = newYear;
-		return true;
-	}
-	int getYear() {
-		return year;
-	}
-}
-```
-
-- there is no other difference between `struct` and `class` in C++!
-
-### Initializing Members
-
-Problem:
-
-```cpp
-int main() {
-	Time time;
-	clock.setYear(1980); // will fail, <1990
-	printf("Time: %d\n", time.getYear());
-	clock.addYear();
-	printf("Time: %d\n", time.getYear());
-}
-```
-
-### Constructors
-
-```cpp
-Time() {
-	year = 2022;
-}
-Time(int in_year) {
-	if(!setYear(in_year)) {
-		year = 2022;
-		// (better: throw an exception)
-	}
-}
-```
-
-```cpp
-int main() {
-	Time a();
-	Time b(2030);
-}
-```
-
-## Initialization
-
-### Fundamental Type: Zero
-
-```cpp
-int a = 0;
-int b {};
-int c = {};
-int d; // uninitialized
-```
-
-### Fundamental Type: Arbitrary Value
-
-```cpp
-int e = 42;
-int f{42};
-int g = {42};
-int h(42);
-```
-
-### PODs
-
-```cpp
-struct Pod {
-	uint64_t a;
-	char b[256];
-	bool c;
-};
-
-int main() {
-	Pod pod1{};
-	Pod pod2 = {};
-	Pod pod3{42, "Hello"};
-	Pod pod4{42, "Hello", true};
-	// Pod pod5 = 0;
-	// Pod pod6{"Hello", 42}; // invalid types/order
-	// Pod pod7(42, "Hello", true); // does not work
-}
-```
-
-#### Call-By-Value
-
-```cpp
-#include <cstdio>
-
-struct Pod {
-	int a;
-	char b[256];
-	bool c;
-};
-
-void modify(Pod pod) {
-	pod.a = 99;
-	pod.c = false;
-	printf("Pod changed: %d, %s, %d\n", pod.a, pod.b, pod.c);
-}
-
-int main() {
-	Pod pod{42, "Hello", true};
-	printf("Pod before: %d, %s, %d\n", pod.a, pod.b, pod.c);
-	modify(pod);
-	printf("Pod after: %d, %s, %d\n", pod.a, pod.b, pod.c);
-}
-```
-
-Whenever you assign a value to a new variable
-- a copy is created
-- if you modify that copy, the original remains unaffected
-
-### Arrays
-
-```cpp
-int array1[]{1,2,3}; // 1, 2, 3
-int array2[5]{}; // 0, 0, 0, 0, 0
-int array3[5]{1,2,3}; // 1, 2, 3, 0, 0
-int array4[5]; // uninitialized
-```
-
-### Fully Featured Classes
-
-```cpp
-struct SuchClass {
-	SuchClass() {
-		printf("(no argument)\n");
-	}
-	SuchClass(char c) {
-		printf("char: %c\n", c);
-	}
-	SuchClass(int i) {
-		printf("int: %d\n", i);
-	}
-}
-```
-
-```cpp
-int main(){
-	SuchClass s1;
-	SuchClass s2{};
-	SuchClass s3{'c'};
-	SuchClass s4{255};
-	SuchClass s5('g');
-	SuchClass s6 = {'l'};
-	SuchClass s7(); // Function Declaration :o) // most vexing parse
-}
-```
-
-### Narrowing Conversions
-
-```cpp
-float a{1};
-float b{2};
-int narrowedResult(a/b); // ignored
-int result{a/b}; // warning
-```
-
-### Initializing Class Members
-
-```cpp
-struct Customer{
-	bool active = true;
-	int probationPeriod{6};
-	char name[256] = {"unnamed"};
-	// int notPossible(5);
-};
-```
-
-### Brace yourself
-- Always use braced initializers
-- Uniform Initialization
-
-## Destructor
-- release file handles
-- flush network sockets
-- free dynamic objects
-
-```cpp
-struct Monster{
-	~Monster(){
-		printf("<dramatic deathrattle>\n");
-	}
-}
-```
-
-```cpp
-int main(){
-	printf("creating monster.\n");
-	{
-		Monster monster;
-	}
-	printf("done.\n");
-}
-```
-
-## EXERCISE: STRING WITH ALL LETTERS
-- Create a String with all letters A-Z using a loop
-## EXERCISE: CALCULATOR 
-- Make an Object-Oriented Calculator Application
+- first sub-expression is already true
+- so second sub-expression of `||` doesn't have to be executed
+- can be very useful e.g. `if(player && player.canAttack)`
+- can also be unintended

@@ -12,19 +12,35 @@ int main(){
 ```
 
 - a.k.a. Translation Unit
+-  `.cpp`, `.c`, `.C`, `.cxx`, `.cc`
 
 ### Header File
 
 - Special kind of Source File
 - Never seen by the Compiler
 - Resolved by the Preprocessor
+- `.h`, `.hpp`, `.H`, `.hxx`, `.hh`
+
+### Inline File
+
+- Sometimes used for definitions included in headers
+- `.inl`, `.i`
 
 ### Main
 
+- Function defined in Global Scope
+- Needed for Executables:
+  - Exactly one required
+  - Else: Linker Error
+
 ### include
 
-- Headers
-- Libraries
+```cpp
+#include <cstdio>
+```
+
+- Can be used for Headers and Libraries
+- Is replaced with the contents of the mentioned file
 
 ## Compiler Tool-Chain
 
@@ -34,7 +50,7 @@ int main(){
 g++ -E main.cpp -o main.i
 ```
 
-- Input: 1 Code File
+- Input: 1 Source File
 - Output: 1 Translation Unit
 
 <details>
@@ -698,8 +714,9 @@ int main(){
 
 </details>
 
-- Performs basic code manipulations.
-- `Preprocessor Macros`: `#include`, `#define`
+- Prepares each Source File for the Compiler
+- Executes [`Preprocessor Directives`](https://learn.microsoft.com/en-us/cpp/preprocessor/preprocessor-directives?view=msvc-170)
+  - `#include` `#define`, `#ifdef`, ...
 
 ### Compiler
 
@@ -748,8 +765,10 @@ l_.str:                                 ; @.str
 
 </details>
 
-- Assembly Code is Human-Readable instructions for a certain CPU
+- Translates Source Code into CPU Instructions for one Architecture
+- Assembly Code is the Human-Readable version of those Instructions
 - This is what Programming used to look like before High-Level Programming Language
+- Only Source-Files are Compiled. Headers are not Compiled on their own.
 
 ### Assembler
 
@@ -758,7 +777,7 @@ as main.s -o main.o
 ```
 
 Input: 1 Assembly Code File
-Output: 1 Object File
+Output: 1 Object File `.o`, `.obj`
 
 <details>
     <summary>View Output</summary>
@@ -768,16 +787,16 @@ Output: 1 Object File
 </details>
 
 - Reads human-readable CPU-instructions
-- Converts them into numeric machine code understood by the CPU.
+- Converts them into numeric machine code executable by the CPU.
 - `relocatable`: memory addresses at which the code resides have not been determined, yet
 - `unlinked`: external references to functions and global data outside of the translation unit have not yet been resolved
 
 ### Linker
 
-#### A: Group into Library
+#### A: Group into Static Library
 
 - Input: Multiple Object Files
-- Output: One Library File
+- Output: One Static Library File `.lib`
 
 Grouping multiple Object-Files into a library
 - Is done for convenience
@@ -792,7 +811,7 @@ as main.s -o main.o
 ```
 
 - Input: Multiple Object Files and Libraries
-- Output: One Executable
+- Output: One Executable `.exe`
 
 Fully resolved machine code that can be loaded and run by the operating system.
 - final addresses of all machine code
@@ -800,10 +819,10 @@ Fully resolved machine code that can be loaded and run by the operating system.
 - addresses are still relocatable, meaning relative to an arbitrary base addresses, not absolute
   - the final absolute address is only known when the program is actually loaded into memory
 
-#### C: Linked into DLL
+#### C: Linked into Dynamic Link Library
 
 - Input: Multiple Object Files
-- Output: Dynamic Link Library
+- Output: Dynamic Link Library `.dll`
 
 Acts like a Library: contains functions that can be called by other executables;\
 Acts like an Executable: can be loaded by the Operating System independently and contains start-up and shut-down code
@@ -833,117 +852,6 @@ gcc main.cpp -o main -std=c++14
 - Manually build all compiler and linker commands
 - Cross-Platform CMake: Make-Files
 - Windows MSBuild: `.sln`, `.cproj` `.vcxproj`
-
-## Type System
-- Object-Oriented (State and Behaviour)
-- Definition = Type
-- Strongly-Typed
-
-## Variables
-
-### Declaration
-
-```cpp
-int health;
-```
-
-#### Global
-
-```cpp
-int health;
-int main() {
-
-}
-```
-
-#### Local
-
-```cpp
-int main() {
-	int health;
-}
-```
-
-### Initialization
-
-```cpp
-int health = 100;
-```
-
-## Comparison Operators
-- `==`, `!=`, `<`, `<=`, `>`, `>=`
-
-## Conditional Statements
-
-```cpp
-if(booleanExpression){
-	// then expression
-} else if(otherBoolean){
-	// then expression 2
-} else {
-	// then expression 3
-}
-```
-
-## Functions
-IPO
-- Input: Parameters
-- Processing: Body
-- Output: Return Type + `return` Keyword
-
-### Definition
-
-```cpp
-int addNumbers(int a, int b) {
-	return a + b;
-}
-```
-
-### Invocation
-
-```cpp
-int result = addNumbers(3, 5); // 8
-```
-
-### ORDER MATTERS!
-
-```cpp
-void foo() {
-	bar(); // ERROR: use of undeclared identifier 'bar'
-}
-
-void bar() {
-	foo();
-}
-```
-
-## Print
-
-```cpp
-printf("Ten %d, Twenty %d, Thirty %d", 10, 20, 30);
-```
-
-## Read Input
-```cpp
-#include <cstdio>
-
-int main() {
-	printf("What's your name?\n");
-	char name[100];
-	scanf("%99s", name);
-	printf("Hello, %s", name);
-}
-```
-
-## Comments
-
-```cpp
-// single-line comment
-int number = 12; // comment
-/*
- * multi-line comment
- */
-```
 
 ## Debugging
 - Comes with your IDE
@@ -979,21 +887,3 @@ quit
 
 - Observe the state of the variables line by line!
 - Notice, that variables have "random" values before being initialized
-
-## Exit Code
-
-```cpp
-int main() {
-	return 5;
-}
-```
-
-Generally:
-- `0` - SUCCESS
-- other codes - ERROR CODES
-
-
-## EXERCISE: STEP FUNCTION (SIGN)
-- Make a function that returns -1/0/+1 for negative/zero/positive numbers
-## EXERCISE: ABS FUNCTION
-- Make a function that always returns the positive of a number

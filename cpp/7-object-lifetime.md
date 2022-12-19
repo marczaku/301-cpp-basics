@@ -325,3 +325,5 @@ Please do this exercise. We will continue working on this!
   - prints the string that's currently buffered
 - `xxx getString()`
   - returns a c-style string for the currently buffered contents
+
+## EXERCISE: LINKED LIST
