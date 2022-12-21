@@ -1,4 +1,5 @@
 # 8 Compile-Time Polymorphism
+Similar to Generics in C#
 
 ## Defining a Template Class
 
@@ -66,7 +67,9 @@ int main()
 }
 ```
 
-## const_cast
+## Samples: Named Conversion Functions
+
+### const_cast
 
 Can be used to convert a const object to a non-constant one:
 
@@ -77,7 +80,7 @@ void TakeDamage(const Unit& attacker, int damage) {
 }
 ```
 
-## static_cast
+### static_cast
 
 Reverses an implicit conversion
 
@@ -87,7 +90,7 @@ void Attack(Unit* target){
 }
 ```
 
-## reinterpret_cast
+### reinterpret_cast
 
 Allows to reinterpret memory as a different type, e.g. to look at the bytes of a `float`:
 
@@ -101,7 +104,7 @@ int main()
 }
 ```
 
-## EXERCISE: narrow_cast
+### EXERCISE: narrow_cast
 
 > In Bjarne Stroustrup's "The C++(11) programming language" book, section "11.5 Explicit Type Conversion" you can see what it is.
 > 
@@ -109,7 +112,7 @@ int main()
 > 
 > It makes a static cast to the destination type, then converts the result back to the original type. If you get the same value, then the result is OK. Otherwise, it's not possible to get the original result, hence the value was narrowed losing information.
 
-## EXERCISE: average
+### EXERCISE: average
 - Implement a function that calculates the average of an array of doubles
 - Implement the same function for type int
 - Now, make the function runtime-polymorphic
@@ -250,7 +253,70 @@ size_t index_of_min(std::totally_ordered auto* values, size_t count)
 
 ### Using Concept as
 
-## EXERCISE: BUILD AN AVERAGEABLE CONCEPT AND USE IT
+### Concept Resolution
+The function specialization with the most specific constraints is chosen.\
+
+#### Problem:
+
+```cpp
+template <typename T>
+concept has_x = requires (T v) {
+    v.x;
+};
+template <typename T>
+concept coord = requires (T v) {
+    v.x;
+    v.y;
+};
+void function(has_x auto x) {}
+void function(coord auto x) {}
+
+struct X {
+    int x;
+};
+
+struct Y {
+    int x;
+    int y;
+};
+
+int main() {
+    function(X{}); // OK, only one viable candidate
+    function(Y{}); // Fails, ambiguous
+}
+```
+
+#### Solution:
+
+```cpp
+template <typename T>
+concept has_x = requires (T v) {
+    v.x;
+};
+template <typename T>
+concept coord = has_x<T> && requires (T v) {
+    v.y;
+};
+void function(has_x auto x) {}
+void function(coord auto x) {}
+struct X {
+    int x;
+};
+struct Y {
+    int x;
+    int y;
+};
+int main() {
+    function(X{}); // OK, only one viable candidate
+    function(Y{}); // OK, coord is more specific
+}
+```
+
+#### Rule of Thumb:
+- `A = (X1 ... XN); B = Y && (X1 ... XN);` B is considered to be more specific than A
+- `A = (X1 ... XN); B = Y || (X1 ... XN);` A is considered to be more specific than B
+
+### EXERCISE: BUILD AN AVERAGEABLE CONCEPT AND USE IT
 Template:
 ```cpp
 template<typename T>
